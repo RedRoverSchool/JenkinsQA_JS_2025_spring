@@ -1,14 +1,11 @@
-### IntelliJ IDEA ###
-.idea/*
-
-*.iws
-*.iml
-*.ipr
-
-### VS Code ###
-.vscode/
-
-### Mac OS ###
+node_modules/
+cypress/videos
+cypress/screenshots
+reports
+mochawesomeReports
+cypress/downloads
+cypress.env.json
 .DS_Store
-
-### Project ###
+cypress/.DS_Store
+allure-results
+allure-report
