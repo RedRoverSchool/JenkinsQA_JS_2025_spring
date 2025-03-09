@@ -7,7 +7,7 @@ declare namespace Cypress {
      * // Clean up all jobs, views, nodes, users
      * cy.cleanData()
      */
-    cleanData(resources: string[], all: boolean): Promise<void>
+    cleanData(): Promise<void>
 
     /**
      * Logs in to the application with the provided credentials.

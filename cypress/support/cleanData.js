@@ -3,7 +3,7 @@ const PASSWORD = Cypress.env('local.admin.password');
 const PORT = Cypress.env('local.port');
 const HOST = Cypress.env('local.host');
 
-Cypress.Commands.add('cleanData', () => { 
+Cypress.Commands.add('cleanData', () => {
   var sessionId;
 
     function getUrl() {
@@ -84,7 +84,7 @@ Cypress.Commands.add('cleanData', () => {
 
         page = getHttp(getUrl() + uri);
       }
-      
+
       if (page.status == 403) {
         //throw new RuntimeException(String.format("Authorization does not work with user: \"%s\" and password: \"%s\"", getUserName(), getPassword()));
       } else if (page.status != 200) {
@@ -109,7 +109,7 @@ Cypress.Commands.add('cleanData', () => {
     }
 
     function deleteViews() {
-      let mainPage = getPage(''); 
+      let mainPage = getPage('');
       deleteByLink('view/{name}/doDelete',
         getSubstringsFromPage(mainPage, 'href="/view/', '/"'),
         getCrumbFromPage(mainPage));
@@ -138,7 +138,7 @@ Cypress.Commands.add('cleanData', () => {
 
     function deleteDescription() {
       let mainPage = getPage('');
-      postHttp(getUrl() + "submitDescription", 
+      postHttp(getUrl() + "submitDescription",
         "description=&Submit=&Jenkins-Crumb=" + getCrumbFromPage(mainPage) + "&json=%7B%22description%22%3A+%22%22%2C+%22Submit%22%3A+%22%22%2C+%22Jenkins-Crumb%22%3A+%22" + getCrumbFromPage(mainPage) + "%22%7D");
     }
 
