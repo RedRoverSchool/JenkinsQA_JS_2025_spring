@@ -3,7 +3,7 @@
   <img src="https://img.shields.io/github/commit-activity/m/RedRoverSchool/JenkinsQA_JS_2025_spring">
   <img src="https://img.shields.io/github/last-commit/RedRoverSchool/JenkinsQA_JS_2025_spring">
   <img src="https://img.shields.io/github/contributors/RedRoverSchool/JenkinsQA_JS_2025_spring">
-  <img src="https://github.com/RedRoverSchool/JenkinsQA_JS_2025_spring/actions/workflows/ci.yml/badge.svg">
+  <img src="https://github.com/RedRoverSchool/JenkinsQA_JS_2025_spring/actions/workflows/ci.yaml/badge.svg">
   <img src="https://img.shields.io/github/issues/RedRoverSchool/JenkinsQA_JS_2025_spring">
   <img src="https://img.shields.io/github/issues-pr/RedRoverSchool/JenkinsQA_JS_2025_spring">
   <img src="https://img.shields.io/github/stars/RedRoverSchool/JenkinsQA_JS_2025_spring" alt="stars" />
@@ -81,11 +81,11 @@ ____
 
 **Prerequisites**
 
-- Docker
-- Node.js
+- Docker (https://app.docker.com/)
+- Node.js version 22 (https://nodejs.org/en/download)
 - NPM
 - VSCode
-- Jenkins up and running
+- Jenkins version 2.462.3 installed locally or running in a Docker container. (https://github.com/jenkinsci/jenkins/releases/tag/jenkins-2.462.3)
 
 1. Clone repository to your machine.
 
@@ -93,18 +93,18 @@ ____
 
 3. Run command ```npm install``` in terminal VScode to install dependencies.
 
-4. Copy and paste the file ```cypress.env.json.example``` to project root folder. Сhange the file name to ```cypress.env.json```. Put provided to you by teacher credentials in json file.
+4. Copy and paste the file ```cypress.env.json.example``` to project root folder. Сhange the file name to ```cypress.env.json```. Put credentials in json file.
 
 5. Setup Jenkins using Docker:
 
 - Download and install Docker Desktop (https://www.docker.com/products/docker-desktop)
-- Add to cypress.env.json the following credentials provided to you by teacher: ```local.admin.username```, ```local.admin.password```, ```local.port```, ```local.host```, ```local.admin.token```.
-- Run command `docker run --name jekins --detach -p 8080:8080 -p 50000:50000 jenkins/jenkins:2.492.2-lts-jdk17`
+- Add to cypress.env.json the following credentials: ```local.admin.username```, ```local.admin.password```, ```local.port```, ```local.host```, ```local.admin.token```.
+- Run command `docker run --name jekins --detach -p 8080:8080 -p 50000:50000 jenkins/jenkins:2.462.3-lts-jdk17`
 - Verify the Jenkins is running using ```http://localhost:8080```. If you see the login page of Jenkins, you can start creating your tests and run them using Cypress. 
 - Use ```npx cypress open```  to run tests.
 
 
-***You can have multiple tokens and name them. They can be revoked individually.***
+***Jenkins token creation.***
 - Log in to Jenkins.
 - Click your name (upper-right corner).
 - Click Configure (left-side menu).

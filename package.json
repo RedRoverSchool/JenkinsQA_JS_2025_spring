@@ -15,6 +15,10 @@
     "clean": "echo \"❌ Cleaning the reports folder\" && rimraf ./report/*  && echo \"✅ All reports cleaned!\""
   },
   "author": "",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/RedRoverSchool/JenkinsQA_JS_2025_spring.git"
+  },
   "license": "ISC",
   "dependencies": {
     "cypress-real-events": "^1.14.0"

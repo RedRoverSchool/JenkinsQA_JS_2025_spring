@@ -4,7 +4,7 @@
 
 ## Types of changes
 
-[//]: # (What types of changes does your code introduce to the framwork?)
+[//]: # (What types of changes does your code introduce to the framework?)
 [//]: # (_Put an `x` in the boxes that apply_)
 
 - [ ] Polish (an improvement for an existing tests)
