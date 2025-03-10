@@ -3,7 +3,7 @@
   <img src="https://img.shields.io/github/commit-activity/m/RedRoverSchool/JenkinsQA_JS_2025_spring">
   <img src="https://img.shields.io/github/last-commit/RedRoverSchool/JenkinsQA_JS_2025_spring">
   <img src="https://img.shields.io/github/contributors/RedRoverSchool/JenkinsQA_JS_2025_spring">
-  <img src="https://github.com/RedRoverSchool/JenkinsQA_JS_2025_spring/actions/workflows/parallel.yml/badge.svg">
+  <img src="https://github.com/RedRoverSchool/JenkinsQA_JS_2025_spring/actions/workflows/ci.yml/badge.svg">
   <img src="https://img.shields.io/github/issues/RedRoverSchool/JenkinsQA_JS_2025_spring">
   <img src="https://img.shields.io/github/issues-pr/RedRoverSchool/JenkinsQA_JS_2025_spring">
   <img src="https://img.shields.io/github/stars/RedRoverSchool/JenkinsQA_JS_2025_spring" alt="stars" />
@@ -102,6 +102,15 @@ ____
 - Run command `docker run --name jekins --detach -p 8080:8080 -p 50000:50000 jenkins/jenkins:2.492.2-lts-jdk17`
 - Verify the Jenkins is running using ```http://localhost:8080```. If you see the login page of Jenkins, you can start creating your tests and run them using Cypress. 
 - Use ```npx cypress open```  to run tests.
+
+
+***You can have multiple tokens and name them. They can be revoked individually.***
+- Log in to Jenkins.
+- Click your name (upper-right corner).
+- Click Configure (left-side menu).
+- Use "Add new Token" button to generate a new one then name it.
+- You must copy the token when you generate it as you cannot view the token afterwards.
+- Revoke old tokens when no longer needed.
 
 **Project Coding Convention**
 
