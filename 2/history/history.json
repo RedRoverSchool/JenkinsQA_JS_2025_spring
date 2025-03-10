@@ -1,0 +1,1 @@
+{"dc919b7e4a02f6ab987aff9a144925d3:d41d8cd98f00b204e9800998ecf8427e":{"statistic":{"failed":0,"broken":0,"skipped":0,"passed":1,"unknown":0,"total":1},"items":[{"uid":"f3dc40a6a180b993","reportUrl":"https://RedRoverSchool.github.io/JenkinsQA_JS_2025_spring/2//#testresult/f3dc40a6a180b993","status":"passed","time":{"start":1741565386972,"stop":1741565396940,"duration":9968}}]}}
