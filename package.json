@@ -1,0 +1,32 @@
+{
+  "name": "jenkinsqa_js_2025_spring",
+  "version": "1.0.0",
+  "description": "",
+  "main": "cypress.config.js",
+  "engines": {
+    "node": "22"
+  },
+  "scripts": {
+    "pretest:run:chrome": "npm run clean",
+    "test:start": "npx cypress open --e2e --browser chrome",
+    "test:run:chrome": "npx cypress run --browser chrome",
+    "stop-only": "stop-only --folder cypress/e2e",
+    "report": "allure generate ./report/allure-results --clean -o ./report/allure-report",
+    "clean": "echo \"❌ Cleaning the reports folder\" && rimraf ./report/*  && echo \"✅ All reports cleaned!\""
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cypress-real-events": "^1.14.0"
+  },
+  "devDependencies": {
+    "cypress": "14.1.0",
+    "@types/node": "^22.13.10",
+    "@types/testing-library__cypress": "^5.0.13",
+    "allure-commandline": "2.33.0",
+    "allure-cypress": "3.2.0",
+    "cypress-split": "^1.24.14",
+    "stop-only": "^3.4.2",
+    "rimraf": "3.0.0"
+  }
+}
