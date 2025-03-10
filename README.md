@@ -98,7 +98,7 @@ ____
 5. Setup Jenkins using Docker:
 
 - Download and install Docker Desktop (https://www.docker.com/products/docker-desktop)
-- Add to cypress.env.json the following credentials provided to you by teacher: ```local.admin.username```, ```local.admin.password```, ```local.port```, ```local.host```.
+- Add to cypress.env.json the following credentials provided to you by teacher: ```local.admin.username```, ```local.admin.password```, ```local.port```, ```local.host```, ```local.admin.token```.
 - Run command `docker run --name jekins --detach -p 8080:8080 -p 50000:50000 jenkins/jenkins:2.492.2-lts-jdk17`
 - Verify the Jenkins is running using ```http://localhost:8080```. If you see the login page of Jenkins, you can start creating your tests and run them using Cypress. 
 - Use ```npx cypress open```  to run tests.

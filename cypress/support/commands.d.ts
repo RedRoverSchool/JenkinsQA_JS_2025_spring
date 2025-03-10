@@ -5,9 +5,9 @@ declare namespace Cypress {
      * @returns {Promise<void>} - Promise that resolves when all data has been cleaned up
      * @example
      * // Clean up all jobs, views, nodes, users
-     * cy.cleanData()
+     * cy.cleanData(null, true);
      */
-    cleanData(): Promise<void>
+    cleanData(resources: string[]|null, all: boolean): Promise<void>
 
     /**
      * Logs in to the application with the provided credentials.

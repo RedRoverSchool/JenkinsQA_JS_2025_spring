@@ -1,154 +1,237 @@
-const USER_NAME = Cypress.env('local.admin.username');
-const PASSWORD = Cypress.env('local.admin.password');
-const PORT = Cypress.env('local.port');
-const HOST = Cypress.env('local.host');
+const USER_NAME = Cypress.env('local.admin.username')
+const PORT = Cypress.env('local.port')
+const HOST = Cypress.env('local.host')
+const TOKEN = Cypress.env('local.admin.token')
+const PASSWORD = Cypress.env('local.admin.password')
+class JenkinsProjectManager {
+  /**
+   * Create a new Jenkins Project Manager instance
+   * @param {string} baseUrl - The base URL of the Jenkins server
+   * @param {string} username - Jenkins username for authentication
+   * @param {string} apiToken - Jenkins API token for authentication
+   */
+  constructor(baseUrl, username, apiToken) {
+    this.baseUrl = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`
+    this.username = username
+    this.apiToken = apiToken
+    this.csrfCrumb = null
+  }
 
-Cypress.Commands.add('cleanData', () => {
-  var sessionId;
+  /**
+   * Generate a Base64 encoded Basic Authentication header
+   * @returns {string} Base64 encoded authentication header
+   * @private
+   */
+  #getAuthHeader() {
+    return `Basic ${btoa(`${this.username}:${this.apiToken}`)}`
+  }
 
-    function getUrl() {
-      return `http://${HOST}:${PORT}/`
-    }
-
-    function getUserName() {
-      return USER_NAME
-    }
-
-    function getPassword() {
-      return PASSWORD
-    }
-
-    function getCrumbFromPage(page) {
-      const CRUMB_TAG = 'data-crumb-value="';
-
-      let crumbTagBeginIndex = page.indexOf(CRUMB_TAG) + CRUMB_TAG.length;
-      let crumbTagEndIndex = page.indexOf('"', crumbTagBeginIndex);
-
-      return page.substring(crumbTagBeginIndex, crumbTagEndIndex);
-    }
-
-    function getSubstringsFromPage(page, from, to, maxSubstringLength = 100) {
-      let result = new Set();
-
-      let index = page.indexOf(from);
-      while (index != -1) {
-        let endIndex = page.indexOf(to, index + from.length);
-
-        if (endIndex != -1 && endIndex - index < maxSubstringLength) {
-          result.add(page.substring(index + from.length, endIndex));
-        } else {
-          endIndex = index + from.length;
+  /**
+   * Retrieve CSRF crumb for secure API requests
+   * @returns {Promise<{name: string, value: string}>} CSRF crumb details
+   * @throws {Error} If CSRF crumb retrieval fails
+   * @private
+   */
+  async #getCsrfCrumb() {
+    if (this.csrfCrumb) return this.csrfCrumb
+    try {
+      const response = await fetch(`${this.baseUrl}crumbIssuer/api/json`, {
+        headers: {
+          Authorization: this.#getAuthHeader()
         }
-
-        index = page.indexOf(from, endIndex);
+      })
+      if (!response.ok) throw new Error('Failed to retrieve CSRF crumb')
+      const data = await response.json()
+      this.csrfCrumb = {
+        name: data.crumbRequestField,
+        value: data.crumb
       }
-
-      return result;
+      return this.csrfCrumb
+    } catch (error) {
+      console.error('CSRF crumb retrieval failed:', error)
+      this.csrfCrumb = null
+      throw error
     }
+  }
 
-    function setHeader(request) {
-      request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-      if (sessionId != null) {
-        request.setRequestHeader('Cookie', sessionId);
-      }
-    }
+  /**
+   * Determine the resource type for a given resource name
+   * @param {string} resourceName - Name of the resource
+   * @returns {Promise<string>} Resource type (job, view, node, or user)
+   * @private
+   */
+  async #determineResourceType(resourceName) {
+    const resourceTypes = ['jobs', 'views', 'nodes']
 
-    function sendHttp(url, type, body) {
-      let http = new XMLHttpRequest();
-      http.open(type, url, false);
-      setHeader(http);
-      http.send(body);
-
-      return http;
-    }
-
-    function getHttp(url) {
-      return sendHttp(url, 'GET', null);
-    }
-
-    function postHttp(url, body) {
-      return sendHttp(url, 'POST', body);
-    }
-
-    function getPage(uri) {
-      let page = getHttp(getUrl() + uri);
-      if (page.status != 200) {
-        const HEAD_COOKIE = 'set-cookie';
-
-        let loginPage = getHttp(getUrl() + 'login?from=%2F');
-        sessionId = loginPage.getResponseHeader(HEAD_COOKIE);
-
-        let indexPage = postHttp(getUrl() + 'j_spring_security_check',
-          'j_username=' + getUserName() + '&j_password=' + getPassword() + '&from=%2F&Submit=');
-        sessionId = indexPage.getResponseHeader(HEAD_COOKIE);
-
-        page = getHttp(getUrl() + uri);
-      }
-
-      if (page.status == 403) {
-        //throw new RuntimeException(String.format("Authorization does not work with user: \"%s\" and password: \"%s\"", getUserName(), getPassword()));
-      } else if (page.status != 200) {
-        //throw new RuntimeException("Something went wrong while clearing data");
-      }
-
-      return page.responseText;
-    }
-
-    function deleteByLink(link, names, crumb) {
-      let fullCrumb = `Jenkins-Crumb=${crumb}`;
-      for (const name of names) {
-        postHttp((getUrl() + link).replace('{name}', name), fullCrumb);
+    for (const type of resourceTypes) {
+      const resources = await this.#listResource(type)
+      if (resources.includes(resourceName)) {
+        return type.slice(0, -1)
       }
     }
+    return 'user'
+  }
 
-    function deleteJobs() {
-      let mainPage = getPage('');
-      deleteByLink('job/{name}/doDelete',
-        getSubstringsFromPage(mainPage, 'href="job/', '/"'),
-        getCrumbFromPage(mainPage));
+  /**
+   * List resources of a specific type from Jenkins
+   * @param {string} resourceType - Type of resource to list (jobs, views, or nodes)
+   * @returns {Promise<string[]>} Array of resource names
+   * @throws {Error} If listing resources fails or unsupported resource type
+   * @private
+   */
+  async #listResource(resourceType) {
+    const endpoints = {
+      jobs: 'api/json?depth=1',
+      views: 'api/json?depth=1',
+      nodes: 'computer/api/json'
     }
 
-    function deleteViews() {
-      let mainPage = getPage('');
-      deleteByLink('view/{name}/doDelete',
-        getSubstringsFromPage(mainPage, 'href="/view/', '/"'),
-        getCrumbFromPage(mainPage));
+    const response = await fetch(`${this.baseUrl}${endpoints[resourceType]}`, {
+      headers: {
+        Authorization: this.#getAuthHeader()
+      }
+    })
 
-      let viewPage = getPage('me/my-views/view/all/');
-      deleteByLink(`user/${getUserName().toLowerCase()}/my-views/view/{name}/doDelete`,
-        getSubstringsFromPage(viewPage, `href="/user/${getUserName().toLowerCase()}/my-views/view/`, '/"'),
-        getCrumbFromPage(viewPage));
+    if (!response.ok) throw new Error(`Failed to list ${resourceType}`)
+
+    const data = await response.json()
+
+    switch (resourceType) {
+      case 'jobs':
+        return data.jobs.map(job => job.name)
+      case 'views':
+        return data.views.map(view => view.name).filter(view => view !== 'all')
+      case 'nodes':
+        return data.computer.filter(node => node.displayName !== 'Built-In Node').map(node => node.displayName)
+      default:
+        throw new Error(`Unsupported resource type: ${resourceType}`)
+    }
+  }
+
+  /**
+   * Delete a specific resource from Jenkins
+   * @param {string} resourceType - Type of resource to delete (job, view, node, or user)
+   * @param {string} resourceName - Name of the resource to delete
+   * @returns {Promise<string>} Deletion success message
+   * @throws {Error} If resource deletion fails
+   * @private
+   */
+  async #deleteResource(resourceType, resourceName) {
+    const csrfCrumb = await this.#getCsrfCrumb()
+    let deleteUrl
+    switch (resourceType) {
+      case 'user':
+        deleteUrl = `${this.baseUrl}manage/securityRealm/user/${encodeURIComponent(resourceName)}/doDelete`
+        break
+      default:
+        deleteUrl = `${this.baseUrl}${resourceType}/${encodeURIComponent(resourceName)}/doDelete`
     }
 
-    function deleteUsers() {
-      let userPage = getPage('manage/securityRealm/');
-      let users = getSubstringsFromPage(userPage, 'href="user/', '/"');
-      users.delete(getUserName().toLowerCase());
-      deleteByLink('manage/securityRealm/user/{name}/doDelete',
-        users,
-        getCrumbFromPage(userPage));
+    const response = await fetch(deleteUrl, {
+      method: 'POST',
+      headers: {
+        Authorization: this.#getAuthHeader(),
+        [csrfCrumb.name]: csrfCrumb.value
+      }
+    })
+    if (response.ok) {
+      console.log(`Successfully deleted ${resourceType}: ${resourceName}`)
+      return `Successfully deleted ${resourceType}: ${resourceName}`
     }
+  }
 
-    function deleteNodes() {
-      let mainPage = getPage('');
-      deleteByLink('computer/{name}/doDelete',
-        getSubstringsFromPage(mainPage, 'href="/computer/', '/"'),
-        getCrumbFromPage(mainPage));
+  /**
+   * Delete all resources or specific resources
+   * @param {string[]} [resources=null] - Optional array of specific resources to delete
+   * @param {boolean} [deleteAll=false] - Flag to delete all resources of all types
+   * @returns {Promise<string[]>} Array of deletion results (success or error messages)
+   * @throws {Error} If deletion fails
+   */
+  async deleteResources(resources = null, deleteAll = false) {
+    try {
+      if (deleteAll) {
+        const allResourceTypes = ['jobs', 'views', 'nodes']
+        const deletionResults = await Promise.allSettled(
+          allResourceTypes.map(type => this.deleteAllResourcesOfType(type))
+        )
+
+        return deletionResults.flatMap((result, index) => {
+          const { [index]: resourceType } = allResourceTypes
+          if (result.status === 'fulfilled') {
+            return result.value
+          } else {
+            console.error(`${resourceType} deletion failed:`, result.reason)
+            return result.reason.message
+          }
+        })
+      }
+      if (!resources || resources.length === 0) {
+        return []
+      }
+      const deletionResults = await Promise.allSettled(
+        resources.map(async resource => {
+          const resourceType = await this.#determineResourceType(resource)
+          return this.#deleteResource(resourceType, resource)
+        })
+      )
+
+      return deletionResults.map((result, index) => {
+        const { [index]: resourceName } = resources
+        if (result.status === 'fulfilled') {
+          return result.value
+        } else {
+          console.error(`Resource ${resourceName} deletion failed:`, result.reason)
+          return result.reason.message
+        }
+      })
+    } catch (error) {
+      console.error('Resource deletion failed:', error)
+      throw error
     }
+  }
 
-    function deleteDescription() {
-      let mainPage = getPage('');
-      postHttp(getUrl() + "submitDescription",
-        "description=&Submit=&Jenkins-Crumb=" + getCrumbFromPage(mainPage) + "&json=%7B%22description%22%3A+%22%22%2C+%22Submit%22%3A+%22%22%2C+%22Jenkins-Crumb%22%3A+%22" + getCrumbFromPage(mainPage) + "%22%7D");
-    }
+  /**
+   * Delete all resources of a specific type
+   * @param {string} resourceType - Type of resource to bulk delete (jobs, views, or nodes)
+   * @returns {Promise<string[]>} Array of deletion results
+   * @private
+   */
+  async deleteAllResourcesOfType(resourceType) {
+    const resources = await this.#listResource(resourceType)
 
-    function clearData() {
-      deleteViews();
-      deleteJobs();
-      deleteUsers();
-      deleteNodes();
-      deleteDescription();
-    }
+    const deletionResults = await Promise.allSettled(
+      resources.map(resource => this.#deleteResource(resourceType.slice(0, -1), resource))
+    )
 
-    clearData();
+    return deletionResults.map((result, index) => {
+      const { [index]: resourceName } = resources
+      if (result.status === 'fulfilled') {
+        return result.value
+      } else {
+        console.error(`${resourceType} ${resourceName} deletion failed:`, result.reason)
+        return result.reason.message
+      }
+    })
+  }
+}
+
+// Cypress command for clean data
+Cypress.Commands.add('cleanData', (resources, all = false) => {
+  const jenkinsManager = new JenkinsProjectManager(`http://${HOST}:${PORT}/`, USER_NAME, TOKEN)
+
+  return jenkinsManager
+    .deleteResources(resources, all)
+    .then(results => {
+      Cypress.log({
+        name: 'Bulk Deletion Complete',
+        message: results.filter(Boolean)
+      })
+    })
+    .catch(error => {
+      Cypress.log({
+        name: 'Bulk Deletion Failed',
+        message: error
+      })
+      throw error
+    })
 })
