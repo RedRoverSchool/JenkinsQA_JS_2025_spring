@@ -82,7 +82,7 @@ ____
 **Prerequisites**
 
 - Docker (https://app.docker.com/)
-- Node.js version 22 (https://nodejs.org/en/download)
+- Node.js version 18 or higher (https://nodejs.org/en/download)
 - NPM
 - VSCode
 - Jenkins version 2.462.3 installed locally or running in a Docker container. (https://github.com/jenkinsci/jenkins/releases/tag/jenkins-2.462.3)

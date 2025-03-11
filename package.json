@@ -4,7 +4,7 @@
   "description": "",
   "main": "cypress.config.js",
   "engines": {
-    "node": "22"
+    "node": "18"
   },
   "scripts": {
     "pretest:run:chrome": "npm run clean",

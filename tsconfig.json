@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "types": ["cypress"],
+    "baseUrl": "./"
   },
   "include": ["cypress/**/*.js", "cypress.config.js", "./node_modules/cypress"]
 }
