@@ -6,8 +6,7 @@ on:
 
   workflow_dispatch:
 
-permissions:
-  contents: write
+permissions: write-all
 
 jobs:
   prepare:
@@ -26,8 +25,9 @@ jobs:
 
   run-test:
     needs: prepare
+    timeout-minutes: 25
     if: always()
-    name: 'Run tests'
+    name: 'Run tests ${{ github.actor }} ${{ github.event_name }} - ${{ github.sha }}'
     runs-on: ubuntu-latest
 
     strategy:
@@ -146,3 +146,12 @@ jobs:
           path: cypress/screenshots
           if-no-files-found: ignore
           retention-days: 1
+
+      - name: Add the workflow status back to PR comment
+        uses: mshick/add-pr-comment@v2
+        if: (contains(fromJSON('["pull_request"]'), github.event_name))
+        with:
+          message-success: |
+                  Workflow successfully completed
+          message-failure: |
+                  Workflow failed
