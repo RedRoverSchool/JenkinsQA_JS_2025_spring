@@ -1,4 +1,4 @@
-name: CI
+name: Cypress Tests
 
 on:
   pull_request:
@@ -148,6 +148,7 @@ jobs:
           retention-days: 1
 
       - name: Add the workflow status back to PR comment
+        continue-on-error: true
         uses: mshick/add-pr-comment@v2
         if: (contains(fromJSON('["pull_request"]'), github.event_name))
         with:
